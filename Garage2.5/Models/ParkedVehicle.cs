@@ -20,5 +20,6 @@ namespace Garage2._5.Models
 
         //Navigationproperty Not in database!
         public Member Member { get; set; }
+        public VehicleType VehicleType { get; set; }
     }
 }
