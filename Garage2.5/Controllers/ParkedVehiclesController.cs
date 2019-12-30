@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Garage2._5.Models;
+using Garage2._5.Data;
 
 namespace Garage2._5.Controllers
 {
@@ -154,6 +155,52 @@ namespace Garage2._5.Controllers
         private bool ParkedVehicleExists(int id)
         {
             return _context.ParkedVehicle.Any(e => e.Id == id);
+        }
+
+        public async Task<IActionResult> Receipt(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var parkedVehicle = await _context.ParkedVehicle.FirstOrDefaultAsync(m => m.Id == id);
+            
+
+            if (parkedVehicle == null)
+            {
+                return NotFound();
+            }
+
+            var model = new Receipt();
+            model.RegNo = parkedVehicle.RegNo;
+
+            var parkedMemberId = parkedVehicle.MemberId;
+            var parkedvehicletype = parkedVehicle.
+            var memberdetails = await _context.Member.FirstOrDefaultAsync(m => m.Id == parkedMemberId);
+
+            model.FullName = memberdetails.FullName;
+            model.CheckInTime = parkedVehicle.CheckInTime;
+            model.CheckOutTime = DateTime.Now;
+            var totaltime = model.CheckOutTime - model.CheckInTime;
+            var min = (totaltime.Minutes > 0) ? 1 : 0;
+
+
+            if (totaltime.Days == 0)
+            {
+                model.Totalparkingtime = totaltime.Hours + " Hrs " + totaltime.Minutes + " Mins";
+                model.Totalprice = ((totaltime.Hours + min) * 5) + "Kr";
+            }
+            else
+            {
+                model.Totalparkingtime = totaltime.Days + "Days" + " " + totaltime.Hours + "hrs" + " " + totaltime.Minutes + "mins";
+                model.Totalprice = (totaltime.Days * 100) + ((totaltime.Hours + min) * 5) + "Kr";
+            }
+
+            parkedVehicle.CheckOutTime = DateTime.Now;
+            await _context.SaveChangesAsync();
+
+            return View(model);
         }
     }
 }
