@@ -5,24 +5,34 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using Garage2._5.Data;
 using Garage2._5.Models;
+using AutoMapper;
+using Garage2._5.ViewModel;
 
 namespace Garage2._5.Controllers
 {
     public class ParkedVehiclesController : Controller
     {
         private readonly Garage2_5Context _context;
+        private readonly IMapper mapper;
 
-        public ParkedVehiclesController(Garage2_5Context context)
+        public ParkedVehiclesController(Garage2_5Context context, IMapper mapper)
         {
             _context = context;
+            this.mapper = mapper;
         }
 
         // GET: ParkedVehicles
         public async Task<IActionResult> Index()
         {
-            var garage2_5Context = _context.ParkedVehicle.Include(p => p.Member);
-            return View(await garage2_5Context.ToListAsync());
+            //  var garage2_5Context = _context.ParkedVehicle.Include(p => p.Member).Include(p => p.VehicleType);
+            // return View(await garage2_5Context.ToListAsync());
+
+            // View Model to Have Owner name,CheckIn Time,Regno,Type.
+            var model3 = await mapper.ProjectTo<VehicleListDetails>(_context.ParkedVehicle).ToListAsync();
+
+            return View(model3);
         }
 
         // GET: ParkedVehicles/Details/5
@@ -35,6 +45,7 @@ namespace Garage2._5.Controllers
 
             var parkedVehicle = await _context.ParkedVehicle
                 .Include(p => p.Member)
+                .Include(p => p.VehicleType)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (parkedVehicle == null)
             {
@@ -44,10 +55,22 @@ namespace Garage2._5.Controllers
             return View(parkedVehicle);
         }
 
-        // GET: ParkedVehicles/Create
+        // GET: ParkedVehicles/
         public IActionResult Create()
+
+        // To Indentify Member name Unique, Included Email also to appear in the Dropdown list.
         {
-            ViewData["MemberId"] = new SelectList(_context.Member, "Id", "Id");
+            var memberList = _context.Set<Member>()
+                     .Select(x => new SelectListItem
+                     {
+                         Value = x.Id.ToString(),
+                         Text = x.FullName + "( " + x.Email + ")"
+                     }).ToList();
+            ViewData["MemberId"] = memberList;
+
+         // Display the Vehicle Type in the Dropdown List.
+
+            ViewData["VehicleTypeId"] = new SelectList(_context.Set<VehicleType>(), "Id", "Type");
             return View();
         }
 
@@ -56,7 +79,7 @@ namespace Garage2._5.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,RegNo,Color,Brand,Model,NoOfWheels,MemberId,CheckInTime,CheckOutTime")] ParkedVehicle parkedVehicle)
+        public async Task<IActionResult> Create([Bind("Id,RegNo,Color,Brand,Model,NoOfWheels,CheckInTime,CheckOutTime,MemberId,VehicleTypeId")] ParkedVehicle parkedVehicle)
         {
             if (ModelState.IsValid)
             {
@@ -64,7 +87,8 @@ namespace Garage2._5.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["MemberId"] = new SelectList(_context.Member, "Id", "Id", parkedVehicle.MemberId);
+            ViewData["MemberId"] = new SelectList(_context.Set<Member>(), "Id", "Id", parkedVehicle.MemberId);
+            ViewData["VehicleTypeId"] = new SelectList(_context.Set<VehicleType>(), "Id", "Id", parkedVehicle.VehicleTypeId);
             return View(parkedVehicle);
         }
 
@@ -81,7 +105,8 @@ namespace Garage2._5.Controllers
             {
                 return NotFound();
             }
-            ViewData["MemberId"] = new SelectList(_context.Member, "Id", "Id", parkedVehicle.MemberId);
+            ViewData["MemberId"] = new SelectList(_context.Set<Member>(), "Id", "Id", parkedVehicle.MemberId);
+            ViewData["VehicleTypeId"] = new SelectList(_context.Set<VehicleType>(), "Id", "Id", parkedVehicle.VehicleTypeId);
             return View(parkedVehicle);
         }
 
@@ -90,7 +115,7 @@ namespace Garage2._5.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,RegNo,Color,Brand,Model,NoOfWheels,MemberId,CheckInTime,CheckOutTime")] ParkedVehicle parkedVehicle)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,RegNo,Color,Brand,Model,NoOfWheels,CheckInTime,CheckOutTime,MemberId,VehicleTypeId")] ParkedVehicle parkedVehicle)
         {
             if (id != parkedVehicle.Id)
             {
@@ -117,7 +142,8 @@ namespace Garage2._5.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["MemberId"] = new SelectList(_context.Member, "Id", "Id", parkedVehicle.MemberId);
+            ViewData["MemberId"] = new SelectList(_context.Set<Member>(), "Id", "Id", parkedVehicle.MemberId);
+            ViewData["VehicleTypeId"] = new SelectList(_context.Set<VehicleType>(), "Id", "Id", parkedVehicle.VehicleTypeId);
             return View(parkedVehicle);
         }
 
@@ -131,6 +157,7 @@ namespace Garage2._5.Controllers
 
             var parkedVehicle = await _context.ParkedVehicle
                 .Include(p => p.Member)
+                .Include(p => p.VehicleType)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (parkedVehicle == null)
             {
