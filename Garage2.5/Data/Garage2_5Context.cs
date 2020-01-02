@@ -13,8 +13,8 @@ namespace Garage2._5.Models
         {
         }
 
-        public DbSet<Garage2._5.Models.ParkedVehicle> ParkedVehicle { get; set; }
-        public DbSet<Garage2._5.Models.Member> Member { get; set; }
-        public DbSet<Garage2._5.Models.VehicleType> VehicleType { get; set; }
+        public DbSet<ParkedVehicle> ParkedVehicle { get; set; }
+        public DbSet<Member> Member { get; set; }
+        public DbSet<VehicleType> VehicleType { get; set; }
     }
 }

@@ -5,9 +5,20 @@
 }
 
 <h1>Index</h1>
+<form class="text-light bg-info border rounded-lg" asp-action="Filter">
+    <div class="input-group m-auto">
+        <input type="text" name="firstName" class="form-control" placeholder="Search on First name." />
+        <div class="input-group-append">
+            <input type="text" name="lastName" class="form-control" placeholder="Search on Last name." />
+        </div>
+        <div class="input-group-append">
+            <button type="submit" class="btn btn-primary "><i class="fa fa-search">&emsp;Search</i></button>
+        </div>
 
+    </div>
+</form>
 <p>
-    <a asp-action="Create">Create New</a>
+    <a asp-action="Register">Register</a>
 </p>
 <table class="table">
     <thead>
@@ -15,11 +26,14 @@
             <th>
                 @Html.DisplayNameFor(model => model.Avatar)
             </th>
-            <th>
-                @Html.DisplayNameFor(model => model.FirstName)
+            @*<th>
+            @Html.DisplayNameFor(model => model.FirstName)
             </th>
             <th>
                 @Html.DisplayNameFor(model => model.LastName)
+            </th>*@
+            <th>
+                @Html.DisplayNameFor(model => model.FullName)
             </th>
             <th>
                 @Html.DisplayNameFor(model => model.Email)
@@ -31,21 +45,27 @@
 @foreach (var item in Model) {
         <tr>
             <td>
-                @Html.DisplayFor(modelItem => item.Avatar)
+                <img src="@item.Avatar" />
+            </td>
+            @*<td>
+            @Html.DisplayFor(modelItem => item.Avatar)
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.FirstName)
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.LastName)
+            </td>*@
+            <td>
+                @Html.DisplayFor(modelItem => item.FullName)
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.Email)
             </td>
             <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                @Html.ActionLink("Edit", "Edit", new { id = item.Id }) |
+                @Html.ActionLink("Details", "Details", new { id = item.Id }) |
+                @Html.ActionLink("Delete", "Delete", new { id = item.Id })
             </td>
         </tr>
 }

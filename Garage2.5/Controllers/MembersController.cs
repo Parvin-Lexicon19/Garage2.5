@@ -6,16 +6,22 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Garage2._5.Models;
+using Garage2._5.ViewModels;
+using Bogus;
+using AutoMapper;
 
 namespace Garage2._5.Controllers
 {
     public class MembersController : Controller
     {
         private readonly Garage2_5Context _context;
-
-        public MembersController(Garage2_5Context context)
+        private readonly IMapper mapper;
+        private Faker faker;
+        public MembersController(Garage2_5Context context, IMapper mapper)
         {
             _context = context;
+            this.mapper = mapper;
+            faker = new Faker("sv");
         }
 
         // GET: Members
@@ -31,8 +37,10 @@ namespace Garage2._5.Controllers
             {
                 return NotFound();
             }
-
-            var member = await _context.Member
+            //var member = await _context.Member
+            //.Include(s => s.ParkedVehicles)
+            //.FirstOrDefaultAsync(m => m.Id == id);
+            var member = await mapper.ProjectTo<MemberDetailsViewModel>(_context.Member)                
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (member == null)
             {
@@ -42,21 +50,22 @@ namespace Garage2._5.Controllers
             return View(member);
         }
 
-        // GET: Members/Create
-        public IActionResult Create()
+        // GET: Members/Register
+        public IActionResult Register()
         {
             return View();
         }
 
-        // POST: Members/Create
+        // POST: Members/Register
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Avatar,FirstName,LastName,Email")] Member member)
+        public async Task<IActionResult> Register([Bind("Id,Avatar,FirstName,LastName,Email")] Member member)
         {
             if (ModelState.IsValid)
             {
+                member.Avatar = faker.Internet.Avatar();
                 _context.Add(member);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
@@ -147,6 +156,22 @@ namespace Garage2._5.Controllers
         private bool MemberExists(int id)
         {
             return _context.Member.Any(e => e.Id == id);
+        }
+
+
+        /*Searches based on First name and Last name of member*/
+        public async Task<IActionResult> Filter(string firstname, string? lastname)
+        {
+            var model = await _context.Member.ToListAsync();
+            model = string.IsNullOrWhiteSpace(firstname) ?
+                model :
+                model.Where(m => m.FirstName.ToLower().Contains(firstname.ToLower())).ToList();
+
+            model = lastname == null ?
+                model :
+                model.Where(m => m.LastName.ToLower().Contains(lastname.ToLower())).ToList();
+
+            return View(nameof(Index), model);
         }
     }
 }
