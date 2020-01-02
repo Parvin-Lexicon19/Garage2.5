@@ -22,20 +22,16 @@ namespace Garage2._5.Data
 
                 var fake = new Faker("sv");
                 var vehicles = new List<VehicleType>();
-                if (context.VehicleType.Any())
+                var vehicleWithoutDuplicate = new List<VehicleType>();
+                if (!context.VehicleType.Any())
                 {
-                    //  context.VehicleType.RemoveRange(context.VehicleType);
 
-                    //context.SaveChanges();
-                }
-
-                else
-                {
-                    for (int i = 0; i < 5; i++)
+                    for (int i = 0; i < 10; i++)
                     {
 
                         var ftype = fake.Vehicle.Type();
 
+                        
                         var vehicletype = new VehicleType
 
                         {
@@ -43,12 +39,15 @@ namespace Garage2._5.Data
                         };
 
                         vehicles.Add(vehicletype);
-
-
+                       
 
                     }
 
-                    context.AddRange(vehicles);
+                    // Load only distinct vehicle Type.
+                    vehicleWithoutDuplicate = vehicles.GroupBy(x => x.Type).Select(x => x.First()).ToList();
+
+
+                    context.AddRange(vehicleWithoutDuplicate);
                     context.SaveChanges();
                 }
 

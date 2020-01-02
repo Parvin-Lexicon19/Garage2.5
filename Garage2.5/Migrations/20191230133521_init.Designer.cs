@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Garage2._5.Migrations
 {
     [DbContext(typeof(Garage2_5Context))]
-    [Migration("20191230105323_Initial")]
-    partial class Initial
+    [Migration("20191230133521_init")]
+    partial class init
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {

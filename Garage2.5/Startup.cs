@@ -10,6 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Garage2._5.Models;
+using Garage2._5.Data;
 using AutoMapper;
 
 namespace Garage2._5

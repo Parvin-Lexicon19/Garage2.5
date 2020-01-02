@@ -5,24 +5,34 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using Garage2._5.Data;
 using Garage2._5.Models;
+using AutoMapper;
+using Garage2._5.ViewModel;
 
 namespace Garage2._5.Controllers
 {
     public class ParkedVehiclesController : Controller
     {
         private readonly Garage2_5Context _context;
+        private readonly IMapper mapper;
 
-        public ParkedVehiclesController(Garage2_5Context context)
+        public ParkedVehiclesController(Garage2_5Context context, IMapper mapper)
         {
             _context = context;
+            this.mapper = mapper;
         }
 
         // GET: ParkedVehicles
         public async Task<IActionResult> Index()
         {
-            var garage2_5Context = _context.ParkedVehicle.Include(p => p.Member);
-            return View(await garage2_5Context.ToListAsync());
+        
+
+            // View Model to Have Owner name,CheckIn Time,Regno,Type.
+            var parkedVehicles = _context.ParkedVehicle.Where(p => (p.CheckOutTime) == default(DateTime));
+            var model3 = await mapper.ProjectTo<VehicleListDetails>(parkedVehicles).ToListAsync();
+
+            return View(model3);
         }
 
         // GET: ParkedVehicles/Details/5
@@ -35,6 +45,7 @@ namespace Garage2._5.Controllers
 
             var parkedVehicle = await _context.ParkedVehicle
                 .Include(p => p.Member)
+                .Include(p => p.VehicleType)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (parkedVehicle == null)
             {
@@ -44,27 +55,46 @@ namespace Garage2._5.Controllers
             return View(parkedVehicle);
         }
 
-        // GET: ParkedVehicles/Create
-        public IActionResult Create()
+        // GET: ParkedVehicles/
+        public IActionResult Park()
+
+        // To Indentify Member name Unique, Included Email also to appear in the Dropdown list.
         {
-            ViewData["MemberId"] = new SelectList(_context.Member, "Id", "Id");
+            var memberList = _context.Set<Member>()
+                     .Select(x => new SelectListItem
+                     {
+                         Value = x.Id.ToString(),
+                         Text = x.FullName + "( " + x.Email + ")"
+                     }).ToList();
+            ViewData["MemberId"] = memberList;
+
+         // Display the Vehicle Type in the Dropdown List.
+
+            ViewData["VehicleTypeId"] = new SelectList(_context.Set<VehicleType>(), "Id", "Type");
             return View();
         }
 
-        // POST: ParkedVehicles/Create
+        // POST: ParkedVehicles/Park
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,RegNo,Color,Brand,Model,NoOfWheels,MemberId,CheckInTime,CheckOutTime")] ParkedVehicle parkedVehicle)
+        public async Task<IActionResult> Park([Bind("Id,RegNo,Color,Brand,Model,NoOfWheels,CheckInTime,CheckOutTime,MemberId,VehicleTypeId")] ParkedVehicle parkedVehicle)
         {
             if (ModelState.IsValid)
             {
+                // Populate the current date and Time for checkIN field. 
+
+                parkedVehicle.CheckInTime = DateTime.Now;
+
+                parkedVehicle.CheckOutTime = default(DateTime);
+
                 _context.Add(parkedVehicle);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["MemberId"] = new SelectList(_context.Member, "Id", "Id", parkedVehicle.MemberId);
+            ViewData["MemberId"] = new SelectList(_context.Set<Member>(), "Id", "Id", parkedVehicle.MemberId);
+            ViewData["VehicleTypeId"] = new SelectList(_context.Set<VehicleType>(), "Id", "Id", parkedVehicle.VehicleTypeId);
             return View(parkedVehicle);
         }
 
@@ -81,7 +111,8 @@ namespace Garage2._5.Controllers
             {
                 return NotFound();
             }
-            ViewData["MemberId"] = new SelectList(_context.Member, "Id", "Id", parkedVehicle.MemberId);
+            ViewData["MemberId"] = new SelectList(_context.Set<Member>(), "Id", "Id", parkedVehicle.MemberId);
+            ViewData["VehicleTypeId"] = new SelectList(_context.Set<VehicleType>(), "Id", "Id", parkedVehicle.VehicleTypeId);
             return View(parkedVehicle);
         }
 
@@ -90,7 +121,7 @@ namespace Garage2._5.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,RegNo,Color,Brand,Model,NoOfWheels,MemberId,CheckInTime,CheckOutTime")] ParkedVehicle parkedVehicle)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,RegNo,Color,Brand,Model,NoOfWheels,CheckInTime,CheckOutTime,MemberId,VehicleTypeId")] ParkedVehicle parkedVehicle)
         {
             if (id != parkedVehicle.Id)
             {
@@ -117,12 +148,13 @@ namespace Garage2._5.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["MemberId"] = new SelectList(_context.Member, "Id", "Id", parkedVehicle.MemberId);
+            ViewData["MemberId"] = new SelectList(_context.Set<Member>(), "Id", "Id", parkedVehicle.MemberId);
+            ViewData["VehicleTypeId"] = new SelectList(_context.Set<VehicleType>(), "Id", "Id", parkedVehicle.VehicleTypeId);
             return View(parkedVehicle);
         }
 
         // GET: ParkedVehicles/Delete/5
-        public async Task<IActionResult> Delete(int? id)
+        public async Task<IActionResult> Unpark(int? id)
         {
             if (id == null)
             {
@@ -131,6 +163,7 @@ namespace Garage2._5.Controllers
 
             var parkedVehicle = await _context.ParkedVehicle
                 .Include(p => p.Member)
+                .Include(p => p.VehicleType)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (parkedVehicle == null)
             {
@@ -145,8 +178,11 @@ namespace Garage2._5.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
+            // Check out will just populate Checkout Time but will not delete any record from DB.
+
             var parkedVehicle = await _context.ParkedVehicle.FindAsync(id);
-            _context.ParkedVehicle.Remove(parkedVehicle);
+            parkedVehicle.CheckOutTime = DateTime.Now;
+           // _context.ParkedVehicle.Remove(parkedVehicle);
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
@@ -154,6 +190,66 @@ namespace Garage2._5.Controllers
         private bool ParkedVehicleExists(int id)
         {
             return _context.ParkedVehicle.Any(e => e.Id == id);
+        }
+
+
+        // Check whether the Regno has already been parked.
+        public IActionResult CheckRegno(string regno)
+        {
+            if (_context.ParkedVehicle.Any(s => s.RegNo == regno && s.CheckOutTime == default(DateTime)))
+            {
+                return Json($"{regno} is already Parked");
+            }
+
+            return Json(true);
+        }
+
+        public async Task<IActionResult> Receipt(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var parkedVehicle = await _context.ParkedVehicle.FirstOrDefaultAsync(m => m.Id == id);
+            
+
+            if (parkedVehicle == null)
+            {
+                return NotFound();
+            }
+
+            var model = new Receipt();
+            model.RegNo = parkedVehicle.RegNo;
+
+            var parkedMemberId = parkedVehicle.MemberId;
+            var parkedvehicletypeId = parkedVehicle.VehicleTypeId;
+            var memberdetails = await _context.Member.FirstOrDefaultAsync(m => m.Id == parkedMemberId);
+            var vehicletypedetails = await _context.VehicleType.FirstOrDefaultAsync(m => m.Id == parkedvehicletypeId);
+
+            model.FullName = memberdetails.FullName;
+            model.Type = vehicletypedetails.Type;
+            model.CheckInTime = parkedVehicle.CheckInTime;
+            model.CheckOutTime = DateTime.Now;
+            var totaltime = model.CheckOutTime - model.CheckInTime;
+            var min = (totaltime.Minutes > 0) ? 1 : 0;
+
+
+            if (totaltime.Days == 0)
+            {
+                model.Totalparkingtime = totaltime.Hours + " Hrs " + totaltime.Minutes + " Mins";
+                model.Totalprice = ((totaltime.Hours + min) * 5) + "Kr";
+            }
+            else
+            {
+                model.Totalparkingtime = totaltime.Days + "Days" + " " + totaltime.Hours + "hrs" + " " + totaltime.Minutes + "mins";
+                model.Totalprice = (totaltime.Days * 100) + ((totaltime.Hours + min) * 5) + "Kr";
+            }
+
+            parkedVehicle.CheckOutTime = DateTime.Now;
+            await _context.SaveChangesAsync();
+
+            return View(model);
         }
     }
 }

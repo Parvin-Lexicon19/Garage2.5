@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Garage2._5.Models;
+using Garage2._5.ViewModel;
 
-namespace Garage2._5.Models
+namespace Garage2._5.Data
 {
     public class Garage2_5Context : DbContext
     {
@@ -13,8 +15,12 @@ namespace Garage2._5.Models
         {
         }
 
-        public DbSet<ParkedVehicle> ParkedVehicle { get; set; }
-        public DbSet<Member> Member { get; set; }
-        public DbSet<VehicleType> VehicleType { get; set; }
+        public DbSet<Garage2._5.Models.ParkedVehicle> ParkedVehicle { get; set; }
+
+        public DbSet<Garage2._5.Models.Member> Member { get; set; }
+
+        public DbSet<Garage2._5.Models.VehicleType> VehicleType { get; set; }
+
+        public DbSet<Garage2._5.ViewModel.VehicleListDetails> VehicleListDetails { get; set; }
     }
 }

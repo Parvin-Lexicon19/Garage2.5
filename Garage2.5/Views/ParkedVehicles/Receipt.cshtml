@@ -1,0 +1,71 @@
+﻿@model Garage2._5.Data.Receipt
+
+@{
+    ViewData["Title"] = "Receipt";
+}
+
+
+<div id="print" class=" border border-dark border rounded  align-content-center justify-content-center p-3 w-75">
+    <h1 class="text-center text-light bg-success border rounded-lg font-italic "><u class="text-decoration-none ">Receipt</u></h1>
+    <br />
+    <div class="p-2 bg-secondary text-light vadsomhelst">
+        <h4>Completed parking</h4>
+
+        <strong>
+            Paid  @Html.DisplayFor(model => model.Totalprice)
+
+        </strong>
+    </div>
+    <div class="border border-success order rounded-lg">
+        <dl class="row bg #f0ad4e pl-sm-5 ">
+            <dt class="col-sm-6 pl-sm-5">
+                @Html.DisplayNameFor(model => model.Type)
+            </dt>
+            <dd class="col-sm-6 text-left">
+                @Html.DisplayFor(model => model.Type)
+            </dd>
+            <dt class="col-sm-6 pl-sm-5">
+                @Html.DisplayNameFor(model => model.FullName)
+            </dt>
+            <dd class="col-sm-6 text-left">
+                @Html.DisplayFor(model => model.FullName)
+            </dd>
+            <dt class="col-sm-6 pl-sm-5">
+                @Html.DisplayNameFor(model => model.RegNo)
+            </dt>
+            <dd class="col-sm-6 ">
+                @Html.DisplayFor(model => model.RegNo)
+            </dd>
+            <dt class="col-sm-6 pl-sm-5">
+                @Html.DisplayNameFor(model => model.CheckInTime)
+            </dt>
+            <dd class="col-sm-6 ">
+                @Html.DisplayFor(model => model.CheckInTime)
+            </dd>
+            <dt class="col-sm-6 pl-sm-5">
+                @Html.DisplayNameFor(model => model.CheckOutTime)
+            </dt>
+            <dd class="col-sm-6">
+                @Html.DisplayFor(model => model.CheckOutTime)
+            </dd>
+            <dt class="col-sm-6 pl-sm-5">
+                @Html.DisplayNameFor(model => model.Totalparkingtime)
+            </dt>
+            <dd class="col-sm-6">
+                @Html.DisplayFor(model => model.Totalparkingtime)
+            </dd>
+            <dt class="col-sm-6 pl-sm-5">
+                @Html.DisplayNameFor(model => model.Totalprice)
+            </dt>
+            <dd class="col-sm-6 ">
+                @Html.DisplayFor(model => model.Totalprice)
+            </dd>
+
+        </dl>
+    </div>
+</div>
+<div class="row align-content-center justify-content-center mp-3 w-75">
+    <input class="btn-primary btn-lg mt-3" type="button" onclick="printDiv('print')" value="Print">
+</div>
+<a class="text-rignt" asp-action="Index">Back to List</a>
+

@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Garage2._5.Models;
+using Garage2._5.Data;
 using Garage2._5.ViewModels;
 using Bogus;
 using AutoMapper;
@@ -153,6 +154,15 @@ namespace Garage2._5.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        public IActionResult CheckEmail(string email)
+        {
+            if (_context.Member.Any(s => s.Email == email))
+            {
+                return Json($"{email} is in use");
+            }
+
+            return Json(true);
+        }
         private bool MemberExists(int id)
         {
             return _context.Member.Any(e => e.Id == id);
