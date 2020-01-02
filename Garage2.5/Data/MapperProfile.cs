@@ -22,20 +22,14 @@ namespace Garage2._5.Data
                    from => from.MapFrom(m => m.ParkedVehicles.Where(p => (p.CheckOutTime) == default(DateTime)).ToList()));
 
             CreateMap<ParkedVehicle, VehicleListDetails>()
-           .ForMember(
-                   dest => dest.Type,
-                   from => from.MapFrom(s => s.VehicleType.Type))
-           .ForMember(
-                   dest => dest.OwnerName,
-                   from => from.MapFrom(s => s.Member.FullName));
-
-
-            /* .ForMember(
-                    dest => dest.FirstName,
-                    from => from.MapFrom(s => s.Member.FirstName))
-             .ForMember(
-                    dest => dest.LastName,
-                    from => from.MapFrom(s => s.Member.LastName)); */
+          .ForMember(
+                  dest => dest.Type,
+                  from => from.MapFrom(s => s.VehicleType.Type))
+          .ForMember(
+                  dest => dest.OwnerName,
+                  from => from.MapFrom(s => s.Member.FullName));
         }
     }
 }
+
+
