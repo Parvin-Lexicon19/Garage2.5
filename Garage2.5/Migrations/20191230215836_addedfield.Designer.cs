@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Garage2._5.Migrations
 {
     [DbContext(typeof(Garage2_5Context))]
-    [Migration("20191230105323_Initial")]
-    partial class Initial
+    [Migration("20191230215836_addedfield")]
+    partial class addedfield
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -77,9 +77,14 @@ namespace Garage2._5.Migrations
                     b.Property<string>("RegNo")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("VehicleTypeId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("MemberId");
+
+                    b.HasIndex("VehicleTypeId");
 
                     b.ToTable("ParkedVehicle");
                 });
@@ -104,6 +109,12 @@ namespace Garage2._5.Migrations
                     b.HasOne("Garage2._5.Models.Member", "Member")
                         .WithMany("ParkedVehicles")
                         .HasForeignKey("MemberId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Garage2._5.Models.VehicleType", "VehicleType")
+                        .WithMany()
+                        .HasForeignKey("VehicleTypeId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

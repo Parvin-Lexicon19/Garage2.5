@@ -10,6 +10,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Garage2._5.Models;
+using Garage2._5.Data;
+using AutoMapper;
 
 namespace Garage2._5
 {
@@ -29,6 +31,11 @@ namespace Garage2._5
 
             services.AddDbContext<Garage2_5Context>(options =>
                     options.UseSqlServer(Configuration.GetConnectionString("Garage2_5Context")));
+            services.AddAutoMapper(typeof(Startup));
+
+
+            //  services.AddDbContext<Garage2_5Context>(options =>
+            //         options.UseSqlServer(Configuration.GetConnectionString("Garage2_5Context")));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
