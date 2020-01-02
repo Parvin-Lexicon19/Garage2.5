@@ -145,6 +145,15 @@ namespace Garage2._5.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        public IActionResult CheckEmail(string email)
+        {
+            if (_context.Member.Any(s => s.Email == email))
+            {
+                return Json($"{email} is in use");
+            }
+
+            return Json(true);
+        }
         private bool MemberExists(int id)
         {
             return _context.Member.Any(e => e.Id == id);
