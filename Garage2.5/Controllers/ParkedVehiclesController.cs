@@ -192,6 +192,8 @@ namespace Garage2._5.Controllers
             return _context.ParkedVehicle.Any(e => e.Id == id);
         }
 
+       
+
         public async Task<IActionResult> Receipt(int? id)
         {
             if (id == null)

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -11,6 +12,8 @@ namespace Garage2._5.Models
         public string Avatar { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
+
+        [Remote(action: "CheckEmail", controller: "Members")]
         public string Email { get; set; }
         public string FullName => $"{FirstName} {LastName}";
 
