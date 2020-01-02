@@ -9,8 +9,10 @@ namespace Garage2._5.Data
 {
     public class Receipt
     {
+        
+
         [Display(Name = "Vehicle Parked: ")]
-        public VehicleType Type { get; set; }
+        public string Type { get; set; }
 
         [Display(Name = "Member Name: ")]
         public string FullName { get; set; }
@@ -23,8 +25,8 @@ namespace Garage2._5.Data
 
         [Display(Name = "CheckOut Time: ")]
 
-
         public DateTime CheckOutTime { get; set; }
+
         [Display(Name = "Total Parking Time: ")]
         public string Totalparkingtime { get; set; }
         [Display(Name = "Total Price: ")]

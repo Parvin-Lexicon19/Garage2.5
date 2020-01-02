@@ -176,10 +176,12 @@ namespace Garage2._5.Controllers
             model.RegNo = parkedVehicle.RegNo;
 
             var parkedMemberId = parkedVehicle.MemberId;
-            var parkedvehicletype = parkedVehicle.
+            var parkedvehicletypeId = parkedVehicle.VehicleTypeId;
             var memberdetails = await _context.Member.FirstOrDefaultAsync(m => m.Id == parkedMemberId);
+            var vehicletypedetails = await _context.VehicleType.FirstOrDefaultAsync(m => m.Id == parkedvehicletypeId);
 
             model.FullName = memberdetails.FullName;
+            model.Type = vehicletypedetails.Type;
             model.CheckInTime = parkedVehicle.CheckInTime;
             model.CheckOutTime = DateTime.Now;
             var totaltime = model.CheckOutTime - model.CheckInTime;
