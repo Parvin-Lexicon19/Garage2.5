@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -10,6 +11,8 @@ namespace Garage2._5.Models
     {
         public int Id { get; set; }
         [MaxLength(20)]
+
+        [Remote(action: "CheckRegno", controller: "ParkedVehicles")]
         public string RegNo { get; set; }
         public string Color { get; set; }
         public string Brand { get; set; }

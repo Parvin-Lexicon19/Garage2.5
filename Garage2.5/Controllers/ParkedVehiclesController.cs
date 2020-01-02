@@ -192,7 +192,17 @@ namespace Garage2._5.Controllers
             return _context.ParkedVehicle.Any(e => e.Id == id);
         }
 
-       
+
+        // Check whether the Regno has already been parked.
+        public IActionResult CheckRegno(string regno)
+        {
+            if (_context.ParkedVehicle.Any(s => s.RegNo == regno && s.CheckOutTime == default(DateTime)))
+            {
+                return Json($"{regno} is already Parked");
+            }
+
+            return Json(true);
+        }
 
         public async Task<IActionResult> Receipt(int? id)
         {
