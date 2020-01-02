@@ -26,11 +26,11 @@ namespace Garage2._5.Controllers
         // GET: ParkedVehicles
         public async Task<IActionResult> Index()
         {
-            //  var garage2_5Context = _context.ParkedVehicle.Include(p => p.Member).Include(p => p.VehicleType);
-            // return View(await garage2_5Context.ToListAsync());
+        
 
             // View Model to Have Owner name,CheckIn Time,Regno,Type.
-            var model3 = await mapper.ProjectTo<VehicleListDetails>(_context.ParkedVehicle).ToListAsync();
+            var parkedVehicles = _context.ParkedVehicle.Where(p => (p.CheckOutTime) == default(DateTime));
+            var model3 = await mapper.ProjectTo<VehicleListDetails>(parkedVehicles).ToListAsync();
 
             return View(model3);
         }
@@ -56,7 +56,7 @@ namespace Garage2._5.Controllers
         }
 
         // GET: ParkedVehicles/
-        public IActionResult Create()
+        public IActionResult Park()
 
         // To Indentify Member name Unique, Included Email also to appear in the Dropdown list.
         {
@@ -74,15 +74,21 @@ namespace Garage2._5.Controllers
             return View();
         }
 
-        // POST: ParkedVehicles/Create
+        // POST: ParkedVehicles/Park
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,RegNo,Color,Brand,Model,NoOfWheels,CheckInTime,CheckOutTime,MemberId,VehicleTypeId")] ParkedVehicle parkedVehicle)
+        public async Task<IActionResult> Park([Bind("Id,RegNo,Color,Brand,Model,NoOfWheels,CheckInTime,CheckOutTime,MemberId,VehicleTypeId")] ParkedVehicle parkedVehicle)
         {
             if (ModelState.IsValid)
             {
+                // Populate the current date and Time for checkIN field. 
+
+                parkedVehicle.CheckInTime = DateTime.Now;
+
+                parkedVehicle.CheckOutTime = default(DateTime);
+
                 _context.Add(parkedVehicle);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
@@ -148,7 +154,7 @@ namespace Garage2._5.Controllers
         }
 
         // GET: ParkedVehicles/Delete/5
-        public async Task<IActionResult> Delete(int? id)
+        public async Task<IActionResult> Unpark(int? id)
         {
             if (id == null)
             {
@@ -172,8 +178,11 @@ namespace Garage2._5.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
+            // Check out will just populate Checkout Time but will not delete any record from DB.
+
             var parkedVehicle = await _context.ParkedVehicle.FindAsync(id);
-            _context.ParkedVehicle.Remove(parkedVehicle);
+            parkedVehicle.CheckOutTime = DateTime.Now;
+           // _context.ParkedVehicle.Remove(parkedVehicle);
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
