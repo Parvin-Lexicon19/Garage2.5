@@ -57,14 +57,14 @@
             <select asp-for="MemberId" class="form-control" asp-items="ViewBag.MemberId">
                 <option value="" hidden disabled selected>Select a Member</option>
             </select>
-            <span asp-validation-for="MemberId"></span>
+            <span asp-validation-for="MemberId" class="text-danger"></span>
         </div>
         <div class="form-group">
             <label asp-for="VehicleType" class="control-label"></label>
             <select asp-for="VehicleTypeId" class="form-control" asp-items="ViewBag.VehicleTypeId">
                 <option value="" hidden disabled selected>Select a Vehicle Type</option>
             </select>
-            <span asp-validation-for="VehicleTypeId"></span>
+            <span asp-validation-for="VehicleTypeId" class="text-danger"></span>
 
         </div>
             <div class="form-group">
