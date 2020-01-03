@@ -13,16 +13,22 @@ namespace Garage2._5.Models
         [MaxLength(20)]
 
         [Remote(action: "CheckRegno", controller: "ParkedVehicles")]
+        [Required]
         public string RegNo { get; set; }
         public string Color { get; set; }
         public string Brand { get; set; }
         public string Model { get; set; }
-        [Range(0, 20)]
+        [Range(2, 20)]
         public int NoOfWheels { get; set; }
         [DisplayFormat(DataFormatString = "{0:f}")]
         public DateTime CheckInTime { get; set; }
         public DateTime CheckOutTime { get; set; }
+
+     
+        [Required(ErrorMessage = "Member is Required")]
+        
         public int MemberId { get; set; }
+        [Required(ErrorMessage = "Vehicle Type is Required")]
         public int VehicleTypeId { get; set; }
 
         //Navigationproperty Not in database!
