@@ -232,18 +232,18 @@ namespace Garage2._5.Controllers
             model.CheckInTime = parkedVehicle.CheckInTime;
             model.CheckOutTime = DateTime.Now;
             var totaltime = model.CheckOutTime - model.CheckInTime;
-            var min = (totaltime.Minutes > 0) ? 1 : 0;
+            var morethanhr = (totaltime.Seconds > 0) ? 1 : 0;
 
 
             if (totaltime.Days == 0)
             {
-                model.Totalparkingtime = totaltime.Hours + " Hrs " + totaltime.Minutes + " Mins";
-                model.Totalprice = ((totaltime.Hours + min) * 5) + "Kr";
+                model.Totalparkingtime = totaltime.Hours + " Hrs " + totaltime.Minutes + " Mins " + totaltime.Seconds + " Secs";
+                model.Totalprice = ((totaltime.Hours + morethanhr) * 5) + "Kr";
             }
             else
             {
-                model.Totalparkingtime = totaltime.Days + "Days" + " " + totaltime.Hours + "hrs" + " " + totaltime.Minutes + "mins";
-                model.Totalprice = (totaltime.Days * 100) + ((totaltime.Hours + min) * 5) + "Kr";
+                model.Totalparkingtime = totaltime.Days + "Days" + " " + totaltime.Hours + " hrs " + " " + totaltime.Minutes + " Mins " + +totaltime.Seconds + " Secs";
+                model.Totalprice = (totaltime.Days * 100) + ((totaltime.Hours + morethanhr) * 5) + "Kr";
             }
 
             parkedVehicle.CheckOutTime = DateTime.Now;
@@ -281,6 +281,9 @@ namespace Garage2._5.Controllers
                 .Where(p => p.VehicleType.Type.Equals("Car")).ToList();
 
             model.TotalCar = carCount.Count();
+
+            
+
 
             //// Get Boat count
             //var boatCount = _context.ParkedVehicle.Where(p => p.Type == VehicleType.Boat).Select(u => u.Type);
