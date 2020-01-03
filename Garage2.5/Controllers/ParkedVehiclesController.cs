@@ -535,10 +535,11 @@ namespace Garage2._5.Controllers
 
         public async Task<IActionResult> Filter(string vehicletype, string? regno)
         {
+            ViewBag.NoOfFreePlaces = GetFreeSlotsNo();
+            ViewBag.NoOfFreePlacesForMotorcycle = GetFreeSlotsNoForMotorcycle();
+
             var parkedVehicles = _context.ParkedVehicle.Where(q => (q.CheckOutTime) == default(DateTime));
             var model = await mapper.ProjectTo<VehicleListDetails>(parkedVehicles).ToListAsync();
-
-
 
             model = string.IsNullOrWhiteSpace(vehicletype) ?
                 model :
