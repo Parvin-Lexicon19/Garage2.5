@@ -329,7 +329,7 @@ namespace Garage2._5.Controllers
                 case "RegNo":
                     model = model.OrderByDescending(m => m.RegNo).ToList();
                     break;
-                case "Color":
+                case "OwnerName":
                     model = model.OrderByDescending(m => m.Member).ToList();
                     break;
                 case "CheckInTime":

@@ -13,15 +13,27 @@
     <thead>
         <tr>
             <th>
+                <div>
+                    <a asp-action="Sort" asp-route-columnName="RegNo" class="btn btn-primary"><i class="fa fa-search">Sort</i></a>
+                </div>
                 @Html.DisplayNameFor(model => model.RegNo)
             </th>
             <th>
+                <div>
+                    <a asp-action="Sort" asp-route-columnName="Type" class="btn btn-primary"><i class="fa fa-search">Sort</i></a>
+                </div>
                 @Html.DisplayNameFor(model => model.Type)
             </th>
             <th>
+                <div>
+                    <a asp-action="Sort" asp-route-columnName="CheckInTime" class="btn btn-primary"><i class="fa fa-search">Sort</i></a>
+                </div>
                 @Html.DisplayNameFor(model => model.CheckInTime)
             </th>
             <th>
+                <div>
+                    <a asp-action="Sort" asp-route-columnName="OwnerName" class="btn btn-primary"><i class="fa fa-search">Sort</i></a>
+                </div>
                 @Html.DisplayNameFor(model => model.OwnerName)
             </th>
             <th></th>
