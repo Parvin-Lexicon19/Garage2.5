@@ -17,17 +17,20 @@ namespace Garage2._5.Controllers
     {
         private readonly Garage2_5Context _context;
         private readonly IMapper mapper;
-     
-            public ParkedVehiclesController(Garage2_5Context context, IMapper mapper)
+        public static int[,] Slots;
+
+        public ParkedVehiclesController(Garage2_5Context context, IMapper mapper)
         {
             _context = context;
             this.mapper = mapper;
+            Slots = new int[50, 4];
         }
 
         // GET: ParkedVehicles
         public async Task<IActionResult> Index()
         {
-        
+            ViewBag.NoOfFreePlaces = GetFreeSlotsNo();
+            ViewBag.NoOfFreePlacesForMotorcycle = GetFreeSlotsNoForMotorcycle();
 
             // View Model to Have Owner name,CheckIn Time,Regno,Type.
             var parkedVehicles = _context.ParkedVehicle.Where(p => (p.CheckOutTime) == default(DateTime));
@@ -93,6 +96,8 @@ namespace Garage2._5.Controllers
 
                 _context.Add(parkedVehicle);
                 await _context.SaveChangesAsync();
+                var VType = _context.VehicleType.FirstOrDefault(v => v.Id.Equals(parkedVehicle.VehicleTypeId));
+                Park(parkedVehicle.Id, VType);
                 return RedirectToAction(nameof(Index));
             }
             ViewData["MemberId"] = new SelectList(_context.Set<Member>(), "Id", "Id", parkedVehicle.MemberId);
@@ -300,15 +305,14 @@ namespace Garage2._5.Controllers
 
         public async Task<IActionResult> GetStatistic()
         {
-            //ViewBag.NoOfFreePlaces = GetFreeSlotsNo();
-            //ViewBag.NoOfFreePlacesForMotorcycle = GetFreeSlotsNoForMotorcycle();
+            ViewBag.NoOfFreePlaces = GetFreeSlotsNo();
+            ViewBag.NoOfFreePlacesForMotorcycle = GetFreeSlotsNoForMotorcycle();
 
             int totalWheels = 0;
-            double totalMin = 0;
             DateTime nowTime = DateTime.Now;
             int nowTimeResult = (nowTime.Day * 100) + nowTime.Hour + nowTime.Minute;
-            double timePrice = 0;
-            double totalParkTimePrice = 0;
+            
+            
 
             var model = new Statistics();
 
@@ -391,20 +395,22 @@ namespace Garage2._5.Controllers
 
         public async Task<IActionResult> Sort(string columnName)
         {
-            //ViewBag.NoOfFreePlaces = GetFreeSlotsNo();
-            //ViewBag.NoOfFreePlacesForMotorcycle = GetFreeSlotsNoForMotorcycle();
+            ViewBag.NoOfFreePlaces = GetFreeSlotsNo();
+            ViewBag.NoOfFreePlacesForMotorcycle = GetFreeSlotsNoForMotorcycle();
 
-            var model = await _context.ParkedVehicle.Where(m => m.CheckOutTime.Equals(default(DateTime))).ToListAsync();
+            var parkedVehicles = _context.ParkedVehicle.Where(p => (p.CheckOutTime) == default(DateTime));
+            var model = await mapper.ProjectTo<VehicleListDetails>(parkedVehicles).ToListAsync();
+
             switch (columnName)
             {
                 case "Type":
-                    model = model.OrderByDescending(m => m.VehicleType).ToList();
+                    model = model.OrderByDescending(m => m.Type).ToList();
                     break;
                 case "RegNo":
                     model = model.OrderByDescending(m => m.RegNo).ToList();
                     break;
                 case "OwnerName":
-                    model = model.OrderByDescending(m => m.Member).ToList();
+                    model = model.OrderByDescending(m => m.OwnerName).ToList();
                     break;
                 case "CheckInTime":
                     model = model.OrderByDescending(m => m.CheckInTime).ToList();
@@ -413,6 +419,118 @@ namespace Garage2._5.Controllers
                     break;
             }
             return View(nameof(Index), model);
+        }
+
+        //Assigns a slot to the vehicle when it checks in
+        //    1/3 slot for Motorcycle
+        //    1 slot for Car
+        //    2 for Bus
+        //    3 for Boat and Airplane
+        // The Slots Array has 100 indexes, every index refers to another array of 4 indexes which has its first index as VehicleType 
+        // and 2nd, 3rd and 4th as possible Motorcycle IDs or all the 3 indexes has the same ID if Vehicle Type is Car, Boat, ...
+        private void Park(int id, VehicleType vehicleType)
+        {
+            //For Motorcycle, checks to see if there is free slot next to already parked Motrorcycle in order to save parking space 
+            //for other bigger in size vehicles
+            if (vehicleType.Type.Equals("Motorbike"))
+            {
+                for (int i = 0; i < Slots.GetLength(0); i++) // Number of slots which is 100 here
+                {
+                    if (Slots[i, 0].Equals(0))
+                    {
+                        Slots[i, 0] = vehicleType.Id;
+                        Slots[i, 1] = id;
+                        return;
+                    }
+                    //if the first index contains Motocycle Type (Enum), it may have palce for another motorcycle
+                    else if (Slots[i, 0].Equals(vehicleType.Id))
+                    {
+                        //parks the new Motorcycle in 2nd or 3rd place, Indexes 3 or 4 of the slot (which has already a Motorcycle in)
+                        for (int j = 1; j < Slots.GetLength(1); j++)
+                        {
+                            if (Slots[i, j].Equals(0))
+                            {
+                                Slots[i, j] = id;
+                                return;
+                            }
+                        }
+                    }
+                }
+            }
+            else //For other Vehicle Types
+                for (int i = 0; i < Slots.GetLength(0); i++)
+                    if (Slots[i, 0].Equals(0))
+                    {
+                        switch (vehicleType.Type)
+                        {
+                            case "Car":
+                                Slots[i, 0] = vehicleType.Id;
+                                for (int j = 1; j < Slots.GetLength(1); j++)
+                                    Slots[i, j] = id;
+                                return;
+                            case "Bus":
+                                if (Slots[i + 1, 0].Equals(0))
+                                {
+                                    Slots[i, 0] = vehicleType.Id;
+                                    Slots[i + 1, 0] = vehicleType.Id;
+                                    for (int j = 1; j < Slots.GetLength(1); j++)
+                                    {
+                                        Slots[i, j] = id;
+                                        Slots[i + 1, j] = id;
+                                    }
+                                    return;
+                                }
+                                break;
+                            case "Boat":
+                            case "Airplane":
+                                if (Slots[i + 1, 0].Equals(0) && Slots[i + 2, 0].Equals(0))
+                                {
+                                    Slots[i, 0] = vehicleType.Id;
+                                    Slots[i + 1, 0] = vehicleType.Id;
+                                    Slots[i + 2, 0] = vehicleType.Id;
+                                    for (int j = 1; j < Slots.GetLength(1); j++)
+                                    {
+                                        Slots[i, j] = id;
+                                        Slots[i + 1, j] = id;
+                                        Slots[i + 2, j] = id;
+                                    }
+                                    return;
+                                }
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+        }
+
+        private int GetFreeSlotsNo()
+        {
+            int freeSlotsNo = 0;
+            for (int i = 0; i < Slots.GetLength(0); i++)
+            {
+                if (Slots[i, 0].Equals(0))
+                    freeSlotsNo++;
+            }
+            return freeSlotsNo;
+        }
+        private int GetFreeSlotsNoForMotorcycle()
+        {
+            int freeSlotsNoM = 0;
+            for (int i = 0; i < Slots.GetLength(0); i++)
+            {
+                if (Slots[i, 0].Equals(0))
+                    freeSlotsNoM += 3;
+                else
+                    if (Slots[i, 0].Equals(_context.VehicleType.FirstOrDefault(v => v.Type.Equals("Motorbike")).Id))
+                {
+                    for (int j = 1; j < Slots.GetLength(1); j++)
+                    {
+                        if (Slots[i, j].Equals(0))
+                            freeSlotsNoM++;
+                    }
+                }
+            }
+            return freeSlotsNoM;
         }
     }
 }
