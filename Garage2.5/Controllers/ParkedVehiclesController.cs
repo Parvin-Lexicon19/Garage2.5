@@ -17,13 +17,12 @@ namespace Garage2._5.Controllers
     {
         private readonly Garage2_5Context _context;
         private readonly IMapper mapper;
-        public static int[,] Slots;
+        public static int[,] Slots = new int[50, 4];
 
         public ParkedVehiclesController(Garage2_5Context context, IMapper mapper)
         {
             _context = context;
             this.mapper = mapper;
-            Slots = new int[50, 4];
         }
 
         // GET: ParkedVehicles
@@ -531,6 +530,25 @@ namespace Garage2._5.Controllers
                 }
             }
             return freeSlotsNoM;
+        }
+
+
+        public async Task<IActionResult> Filter(string vehicletype, string? regno)
+        {
+            var parkedVehicles = _context.ParkedVehicle.Where(q => (q.CheckOutTime) == default(DateTime));
+            var model = await mapper.ProjectTo<VehicleListDetails>(parkedVehicles).ToListAsync();
+
+
+
+            model = string.IsNullOrWhiteSpace(vehicletype) ?
+                model :
+                model.Where(p => p.Type.ToLower().Equals(vehicletype.ToLower())).ToList();
+
+            model = regno == null ?
+                model :
+                model.Where(m => m.RegNo.ToLower().Contains(regno.ToLower())).ToList();
+
+            return View(nameof(Index), model);
         }
     }
 }
