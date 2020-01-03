@@ -259,11 +259,10 @@ namespace Garage2._5.Controllers
             //ViewBag.NoOfFreePlacesForMotorcycle = GetFreeSlotsNoForMotorcycle();
 
             int totalWheels = 0;
-            double totalMin = 0;
             DateTime nowTime = DateTime.Now;
             int nowTimeResult = (nowTime.Day * 100) + nowTime.Hour + nowTime.Minute;
-            double timePrice = 0;
-            double totalParkTimePrice = 0;
+            
+            
 
             var model = new Statistics();
 
@@ -367,6 +366,24 @@ namespace Garage2._5.Controllers
                 default:
                     break;
             }
+            return View(nameof(Index), model);
+        }
+
+        public async Task<IActionResult> Filter(string vehicletype, string? regno)
+        {
+            var parkedVehicles = _context.ParkedVehicle.Where(q => (q.CheckOutTime) == default(DateTime));
+            var model = await mapper.ProjectTo<VehicleListDetails>(parkedVehicles).ToListAsync();
+
+            
+
+            model = string.IsNullOrWhiteSpace(vehicletype) ?
+                model :
+                model.Where(p => p.Type.ToLower().Equals(vehicletype.ToLower())).ToList();
+
+            model = regno == null ?
+                model :
+                model.Where(m => m.RegNo.ToLower().Contains(regno.ToLower()) ).ToList();
+
             return View(nameof(Index), model);
         }
     }
