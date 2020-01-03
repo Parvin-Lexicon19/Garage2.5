@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Garage2._5.Data;
 using Garage2._5.Models;
 using AutoMapper;
-using Garage2._5.ViewModel;
+using Garage2._5.ViewModels;
 
 namespace Garage2._5.Controllers
 {
@@ -250,6 +250,95 @@ namespace Garage2._5.Controllers
             await _context.SaveChangesAsync();
 
             return View(model);
+        }
+
+
+        public async Task<IActionResult> GetStatistic()
+        {
+            //ViewBag.NoOfFreePlaces = GetFreeSlotsNo();
+            //ViewBag.NoOfFreePlacesForMotorcycle = GetFreeSlotsNoForMotorcycle();
+
+            int totalWheels = 0;
+            double totalMin = 0;
+            DateTime nowTime = DateTime.Now;
+            int nowTimeResult = (nowTime.Day * 100) + nowTime.Hour + nowTime.Minute;
+            double timePrice = 0;
+            double totalParkTimePrice = 0;
+
+            var model = new Statistics();
+
+            // Get car count wheels
+            var parkedVehicles = _context.ParkedVehicle.Where(p => (p.CheckOutTime) == default(DateTime));
+            var Wheels = parkedVehicles.Select(m => (m.NoOfWheels));
+            foreach (var wheel in Wheels)
+            {
+                totalWheels += wheel;
+            }
+
+            // Get car count            
+            var carCount = parkedVehicles
+                .Include(p => p.VehicleType)
+                .Where(p => p.VehicleType.ToString() == "Car").Count();
+            model.TotalCar = carCount;
+
+            //// Get Boat count
+            //var boatCount = _context.ParkedVehicle.Where(p => p.Type == VehicleType.Boat).Select(u => u.Type);
+            //model.TotalBoat = boatCount.Count();
+
+            //// Get Bus count
+            //var busCount = _context.ParkedVehicle.Where(p => p.Type == VehicleType.Bus).Select(u => u.Type);
+            //model.TotalBus = busCount.Count();
+
+            //// Get Airplane count
+            //var airplaneCount = _context.ParkedVehicle.Where(p => p.Type == VehicleType.Airplane).Select(u => u.Type);
+            //model.TotalAirplane = airplaneCount.Count();
+            //var totTimeChIn = _context.ParkedVehicle.Where(p => (p.CheckOutTime) == default(DateTime)).Select(m => (m.CheckInTime));
+            //foreach (var chTime in totTimeChIn)
+            //{
+            //    int chTimeResult = (chTime.Day * 100) + chTime.Hour + chTime.Minute;
+            //    totalMin = nowTimeResult - chTimeResult;
+            //    timePrice = totalMin * 0.083;
+            //    totalParkTimePrice += timePrice;
+            //}
+
+
+            //model.TotalParkedVehiclePrice = (int)totalParkTimePrice;
+            //model.TotalVehicles = parkedVehicles.Count();
+            // Get Motorcycle count
+            //var motorBikeCount = _context.ParkedVehicle.Where(p => p.Type == VehicleType.Motorcycle).Select(u => u.Type);
+            //model.TotalMotorbike = motorBikeCount.Count();
+
+            model.TotalWheels = totalWheels;
+
+            await _context.SaveChangesAsync();
+
+            return View(model);
+        }
+
+        public async Task<IActionResult> Sort(string columnName)
+        {
+            //ViewBag.NoOfFreePlaces = GetFreeSlotsNo();
+            //ViewBag.NoOfFreePlacesForMotorcycle = GetFreeSlotsNoForMotorcycle();
+
+            var model = await _context.ParkedVehicle.Where(m => m.CheckOutTime.Equals(default(DateTime))).ToListAsync();
+            switch (columnName)
+            {
+                case "Type":
+                    model = model.OrderByDescending(m => m.VehicleType).ToList();
+                    break;
+                case "RegNo":
+                    model = model.OrderByDescending(m => m.RegNo).ToList();
+                    break;
+                case "Color":
+                    model = model.OrderByDescending(m => m.Member).ToList();
+                    break;
+                case "CheckInTime":
+                    model = model.OrderByDescending(m => m.CheckInTime).ToList();
+                    break;
+                default:
+                    break;
+            }
+            return View(nameof(Index), model);
         }
     }
 }
