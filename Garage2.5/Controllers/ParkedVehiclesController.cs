@@ -278,40 +278,65 @@ namespace Garage2._5.Controllers
             // Get car count            
             var carCount = _context.ParkedVehicle
                 .Include(p => p.VehicleType)
-                .Where(p => p.VehicleType.Type.Equals("Car")).ToList();
+                .Where(p => p.VehicleType.Type.Equals("Car") && p.CheckOutTime == default(DateTime)).ToList();
 
             model.TotalCar = carCount.Count();
 
-            
+            // Get Boat count
+            var BoatCount = _context.ParkedVehicle
+              .Include(p => p.VehicleType)
+              .Where(p => p.VehicleType.Type.Equals("Boat") && p.CheckOutTime == default(DateTime)).ToList();
+
+            model.TotalBoat = BoatCount.Count();
+
+            // Get Bus count
+            var BusCount = _context.ParkedVehicle
+            .Include(p => p.VehicleType)
+            .Where(p => p.VehicleType.Type.Equals("Bus") && p.CheckOutTime == default(DateTime)).ToList();
+
+            model.TotalBus = BusCount.Count();
+
+            // Get Airplane count
+            var AirplaneCount = _context.ParkedVehicle
+          .Include(p => p.VehicleType)
+          .Where(p => p.VehicleType.Type.Equals("Airplane") && p.CheckOutTime == default(DateTime)).ToList();
+
+            model.TotalAirplane = AirplaneCount.Count();
+                       
+       
+        // Get Motorcycle count
+        var MotorcycleCount = _context.ParkedVehicle
+           .Include(p => p.VehicleType)
+           .Where(p => p.VehicleType.Type.Equals("Motorbike") && p.CheckOutTime == default(DateTime)).ToList();
+
+            model.TotalMotorbike = MotorcycleCount.Count();
+
+            //Total Parking time
 
 
-            //// Get Boat count
-            //var boatCount = _context.ParkedVehicle.Where(p => p.Type == VehicleType.Boat).Select(u => u.Type);
-            //model.TotalBoat = boatCount.Count();
 
-            //// Get Bus count
-            //var busCount = _context.ParkedVehicle.Where(p => p.Type == VehicleType.Bus).Select(u => u.Type);
-            //model.TotalBus = busCount.Count();
+            var totTimeChIn = _context.ParkedVehicle.Where(p => (p.CheckOutTime) == default(DateTime)).Select(m => (m.CheckInTime));
+            int TotalPrice = 0;
 
-            //// Get Airplane count
-            //var airplaneCount = _context.ParkedVehicle.Where(p => p.Type == VehicleType.Airplane).Select(u => u.Type);
-            //model.TotalAirplane = airplaneCount.Count();
-            //var totTimeChIn = _context.ParkedVehicle.Where(p => (p.CheckOutTime) == default(DateTime)).Select(m => (m.CheckInTime));
-            //foreach (var chTime in totTimeChIn)
-            //{
-            //    int chTimeResult = (chTime.Day * 100) + chTime.Hour + chTime.Minute;
-            //    totalMin = nowTimeResult - chTimeResult;
-            //    timePrice = totalMin * 0.083;
-            //    totalParkTimePrice += timePrice;
-            //}
+            foreach (var chTime in totTimeChIn)
+            {
+                var totaltimenow = DateTime.Now - chTime;
+                var morehr = (totaltimenow.Seconds > 0) ? 1 : 0;
 
+                if (totaltimenow.Days == 0)
+                {
+                     TotalPrice += ((totaltimenow.Hours + morehr) * 5);
+                }
+                else
+                {
+                    TotalPrice += (totaltimenow.Days * 100) + ((totaltimenow.Hours + morehr) * 5);
+                }
 
-            //model.TotalParkedVehiclePrice = (int)totalParkTimePrice;
-            //model.TotalVehicles = parkedVehicles.Count();
-            // Get Motorcycle count
-            //var motorBikeCount = _context.ParkedVehicle.Where(p => p.Type == VehicleType.Motorcycle).Select(u => u.Type);
-            //model.TotalMotorbike = motorBikeCount.Count();
+            }
 
+            model.TotalParkedVehiclePrice =  TotalPrice + "Kr";
+
+            model.TotalVehicles = parkedVehicles.Count();
             model.TotalWheels = totalWheels;
 
             await _context.SaveChangesAsync();
