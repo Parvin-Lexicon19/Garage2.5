@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Garage2._5.Data;
 using Garage2._5.Models;
 using AutoMapper;
-using Garage2._5.ViewModel;
+using Garage2._5.ViewModels;
 
 
 namespace Garage2._5.Controllers
@@ -277,24 +277,142 @@ namespace Garage2._5.Controllers
             model.CheckInTime = parkedVehicle.CheckInTime;
             model.CheckOutTime = DateTime.Now;
             var totaltime = model.CheckOutTime - model.CheckInTime;
-            var min = (totaltime.Minutes > 0) ? 1 : 0;
+            var morethanhr = (totaltime.Seconds > 0) ? 1 : 0;
 
 
             if (totaltime.Days == 0)
             {
-                model.Totalparkingtime = totaltime.Hours + " Hrs " + totaltime.Minutes + " Mins";
-                model.Totalprice = ((totaltime.Hours + min) * 5) + "Kr";
+                model.Totalparkingtime = totaltime.Hours + " Hrs " + totaltime.Minutes + " Mins " + totaltime.Seconds + " Secs";
+                model.Totalprice = ((totaltime.Hours + morethanhr) * 5) + "Kr";
             }
             else
             {
-                model.Totalparkingtime = totaltime.Days + "Days" + " " + totaltime.Hours + "hrs" + " " + totaltime.Minutes + "mins";
-                model.Totalprice = (totaltime.Days * 100) + ((totaltime.Hours + min) * 5) + "Kr";
+                model.Totalparkingtime = totaltime.Days + "Days" + " " + totaltime.Hours + " hrs " + " " + totaltime.Minutes + " Mins " + +totaltime.Seconds + " Secs";
+                model.Totalprice = (totaltime.Days * 100) + ((totaltime.Hours + morethanhr) * 5) + "Kr";
             }
 
             parkedVehicle.CheckOutTime = DateTime.Now;
             await _context.SaveChangesAsync();
 
             return View(model);
+        }
+
+
+        public async Task<IActionResult> GetStatistic()
+        {
+            //ViewBag.NoOfFreePlaces = GetFreeSlotsNo();
+            //ViewBag.NoOfFreePlacesForMotorcycle = GetFreeSlotsNoForMotorcycle();
+
+            int totalWheels = 0;
+            double totalMin = 0;
+            DateTime nowTime = DateTime.Now;
+            int nowTimeResult = (nowTime.Day * 100) + nowTime.Hour + nowTime.Minute;
+            double timePrice = 0;
+            double totalParkTimePrice = 0;
+
+            var model = new Statistics();
+
+            // Get car count wheels
+            var parkedVehicles = _context.ParkedVehicle.Where(p => (p.CheckOutTime) == default(DateTime));
+            var Wheels = parkedVehicles.Select(m => (m.NoOfWheels));
+            foreach (var wheel in Wheels)
+            {
+                totalWheels += wheel;
+            }
+
+            // Get car count            
+            var carCount = _context.ParkedVehicle
+                .Include(p => p.VehicleType)
+                .Where(p => p.VehicleType.Type.Equals("Car") && p.CheckOutTime == default(DateTime)).ToList();
+
+            model.TotalCar = carCount.Count();
+
+            // Get Boat count
+            var BoatCount = _context.ParkedVehicle
+              .Include(p => p.VehicleType)
+              .Where(p => p.VehicleType.Type.Equals("Boat") && p.CheckOutTime == default(DateTime)).ToList();
+
+            model.TotalBoat = BoatCount.Count();
+
+            // Get Bus count
+            var BusCount = _context.ParkedVehicle
+            .Include(p => p.VehicleType)
+            .Where(p => p.VehicleType.Type.Equals("Bus") && p.CheckOutTime == default(DateTime)).ToList();
+
+            model.TotalBus = BusCount.Count();
+
+            // Get Airplane count
+            var AirplaneCount = _context.ParkedVehicle
+          .Include(p => p.VehicleType)
+          .Where(p => p.VehicleType.Type.Equals("Airplane") && p.CheckOutTime == default(DateTime)).ToList();
+
+            model.TotalAirplane = AirplaneCount.Count();
+                       
+       
+        // Get Motorcycle count
+        var MotorcycleCount = _context.ParkedVehicle
+           .Include(p => p.VehicleType)
+           .Where(p => p.VehicleType.Type.Equals("Motorbike") && p.CheckOutTime == default(DateTime)).ToList();
+
+            model.TotalMotorbike = MotorcycleCount.Count();
+
+            //Total Parking time
+
+
+
+            var totTimeChIn = _context.ParkedVehicle.Where(p => (p.CheckOutTime) == default(DateTime)).Select(m => (m.CheckInTime));
+            int TotalPrice = 0;
+
+            foreach (var chTime in totTimeChIn)
+            {
+                var totaltimenow = DateTime.Now - chTime;
+                var morehr = (totaltimenow.Seconds > 0) ? 1 : 0;
+
+                if (totaltimenow.Days == 0)
+                {
+                     TotalPrice += ((totaltimenow.Hours + morehr) * 5);
+                }
+                else
+                {
+                    TotalPrice += (totaltimenow.Days * 100) + ((totaltimenow.Hours + morehr) * 5);
+                }
+
+            }
+
+            model.TotalParkedVehiclePrice =  TotalPrice + "Kr";
+
+            model.TotalVehicles = parkedVehicles.Count();
+            model.TotalWheels = totalWheels;
+
+            await _context.SaveChangesAsync();
+
+            return View(model);
+        }
+
+        public async Task<IActionResult> Sort(string columnName)
+        {
+            //ViewBag.NoOfFreePlaces = GetFreeSlotsNo();
+            //ViewBag.NoOfFreePlacesForMotorcycle = GetFreeSlotsNoForMotorcycle();
+
+            var model = await _context.ParkedVehicle.Where(m => m.CheckOutTime.Equals(default(DateTime))).ToListAsync();
+            switch (columnName)
+            {
+                case "Type":
+                    model = model.OrderByDescending(m => m.VehicleType).ToList();
+                    break;
+                case "RegNo":
+                    model = model.OrderByDescending(m => m.RegNo).ToList();
+                    break;
+                case "OwnerName":
+                    model = model.OrderByDescending(m => m.Member).ToList();
+                    break;
+                case "CheckInTime":
+                    model = model.OrderByDescending(m => m.CheckInTime).ToList();
+                    break;
+                default:
+                    break;
+            }
+            return View(nameof(Index), model);
         }
     }
 }

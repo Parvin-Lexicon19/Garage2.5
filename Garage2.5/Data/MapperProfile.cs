@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Garage2._5.ViewModel;
+using Garage2._5.ViewModels;
 
 namespace Garage2._5.Data
 {

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Garage2._5.Models;
-using Garage2._5.ViewModel;
+using Garage2._5.ViewModels;
 
 namespace Garage2._5.Data
 {
@@ -21,6 +21,6 @@ namespace Garage2._5.Data
 
         public DbSet<Garage2._5.Models.VehicleType> VehicleType { get; set; }
 
-        public DbSet<Garage2._5.ViewModel.VehicleListDetails> VehicleListDetails { get; set; }
+        public DbSet<Garage2._5.ViewModels.VehicleListDetails> VehicleListDetails { get; set; }
     }
 }
