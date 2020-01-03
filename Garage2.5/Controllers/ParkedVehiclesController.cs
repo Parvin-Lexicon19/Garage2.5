@@ -10,14 +10,15 @@ using Garage2._5.Models;
 using AutoMapper;
 using Garage2._5.ViewModels;
 
+
 namespace Garage2._5.Controllers
 {
     public class ParkedVehiclesController : Controller
     {
         private readonly Garage2_5Context _context;
         private readonly IMapper mapper;
-
-        public ParkedVehiclesController(Garage2_5Context context, IMapper mapper)
+     
+            public ParkedVehiclesController(Garage2_5Context context, IMapper mapper)
         {
             _context = context;
             this.mapper = mapper;
@@ -68,7 +69,8 @@ namespace Garage2._5.Controllers
                      }).ToList();
             ViewData["MemberId"] = memberList;
 
-         // Display the Vehicle Type in the Dropdown List.
+      
+            // Display the Vehicle Type in the Dropdown List.
 
             ViewData["VehicleTypeId"] = new SelectList(_context.Set<VehicleType>(), "Id", "Type");
             return View();
@@ -98,6 +100,19 @@ namespace Garage2._5.Controllers
             return View(parkedVehicle);
         }
 
+        // Check whether the Regno has already been parked. The check is only applicable for Park view and not for Edit view.
+        public  IActionResult CheckRegno(string regno,string id)
+        {
+
+                if (_context.ParkedVehicle.Any(s => s.RegNo == regno && s.CheckOutTime == default(DateTime)) && (id == null)) 
+                {
+
+                    return Json($"{regno} is already Parked");
+                }
+                return Json(true);
+         
+        }
+
         // GET: ParkedVehicles/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
@@ -111,8 +126,19 @@ namespace Garage2._5.Controllers
             {
                 return NotFound();
             }
-            ViewData["MemberId"] = new SelectList(_context.Set<Member>(), "Id", "Id", parkedVehicle.MemberId);
-            ViewData["VehicleTypeId"] = new SelectList(_context.Set<VehicleType>(), "Id", "Id", parkedVehicle.VehicleTypeId);
+            // To Indentify Member name Unique, Included Email also to appear in the Dropdown list.
+
+            var memberList = _context.Set<Member>()
+                     .Select(x => new SelectListItem
+                     {
+                         Value = x.Id.ToString(),
+                         Text = x.FullName + "( " + x.Email + ")"
+                     }).ToList();
+            ViewData["MemberId"] = memberList;
+
+            //ViewData["MemberId"] = new SelectList(_context.Set<Member>(), "Id", "Id", parkedVehicle.MemberId);
+            
+            ViewData["VehicleTypeId"] = new SelectList(_context.Set<VehicleType>(), "Id", "Type", parkedVehicle.VehicleTypeId);
             return View(parkedVehicle);
         }
 
@@ -121,18 +147,45 @@ namespace Garage2._5.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,RegNo,Color,Brand,Model,NoOfWheels,CheckInTime,CheckOutTime,MemberId,VehicleTypeId")] ParkedVehicle parkedVehicle)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,RegNo,Color,Brand,Model,NoOfWheels,MemberId,VehicleTypeId")] ParkedVehicle parkedVehicle)
         {
             if (id != parkedVehicle.Id)
             {
                 return NotFound();
             }
 
+            
+            // Do not update the CheckInTime field for any changes in other field values.
+
             if (ModelState.IsValid)
             {
                 try
                 {
-                    _context.Update(parkedVehicle);
+                    // _context.Update(parkedVehicle);
+
+                    var newPostData = await _context.ParkedVehicle.FindAsync(id);
+
+                    if (newPostData == null)
+
+                    {
+
+                        return NotFound();
+
+                    }
+
+                    newPostData.VehicleTypeId = parkedVehicle.VehicleTypeId;
+
+                    newPostData.MemberId = parkedVehicle.MemberId;
+
+                    newPostData.RegNo = parkedVehicle.RegNo;
+
+                    newPostData.Color = parkedVehicle.Color;
+
+                    newPostData.Brand = parkedVehicle.Brand;
+
+                    newPostData.Model = parkedVehicle.Model;
+
+                    newPostData.NoOfWheels = parkedVehicle.NoOfWheels;
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
@@ -193,16 +246,8 @@ namespace Garage2._5.Controllers
         }
 
 
-        // Check whether the Regno has already been parked.
-        public IActionResult CheckRegno(string regno)
-        {
-            if (_context.ParkedVehicle.Any(s => s.RegNo == regno && s.CheckOutTime == default(DateTime)))
-            {
-                return Json($"{regno} is already Parked");
-            }
+   
 
-            return Json(true);
-        }
 
         public async Task<IActionResult> Receipt(int? id)
         {
