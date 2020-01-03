@@ -309,11 +309,10 @@ namespace Garage2._5.Controllers
             ViewBag.NoOfFreePlacesForMotorcycle = GetFreeSlotsNoForMotorcycle();
 
             int totalWheels = 0;
-            double totalMin = 0;
             DateTime nowTime = DateTime.Now;
             int nowTimeResult = (nowTime.Day * 100) + nowTime.Hour + nowTime.Minute;
-            double timePrice = 0;
-            double totalParkTimePrice = 0;
+            
+            
 
             var model = new Statistics();
 
