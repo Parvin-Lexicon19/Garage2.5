@@ -278,7 +278,7 @@ namespace Garage2._5.Controllers
             // Get car count            
             var carCount = _context.ParkedVehicle
                 .Include(p => p.VehicleType)
-                .Where(p => p.VehicleType.ToString() == "Car").ToList();
+                .Where(p => p.VehicleType.Type.Equals("Car")).ToList();
 
             model.TotalCar = carCount.Count();
 
