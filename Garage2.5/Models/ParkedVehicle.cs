@@ -12,13 +12,13 @@ namespace Garage2._5.Models
         public int Id { get; set; }
         [MaxLength(20)]
 
-        [Remote(action: "CheckRegno", controller: "ParkedVehicles")]
+        [Remote(action: "CheckRegno", controller: "ParkedVehicles", AdditionalFields="Id")]
         [Required]
         public string RegNo { get; set; }
         public string Color { get; set; }
         public string Brand { get; set; }
         public string Model { get; set; }
-        [Range(2, 20)]
+        [Range(0, 20)]
         public int NoOfWheels { get; set; }
         [DisplayFormat(DataFormatString = "{0:f}")]
         public DateTime CheckInTime { get; set; }

@@ -38,16 +38,16 @@
                 <input asp-for="NoOfWheels" class="form-control" />
                 <span asp-validation-for="NoOfWheels" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="CheckInTime" class="control-label"></label>
-                <input asp-for="CheckInTime" class="form-control" />
-                <span asp-validation-for="CheckInTime" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="CheckOutTime" class="control-label"></label>
-                <input asp-for="CheckOutTime" class="form-control" />
-                <span asp-validation-for="CheckOutTime" class="text-danger"></span>
-            </div>
+            @* <div class="form-group">
+             <label asp-for="CheckInTime" class="control-label"></label>
+             <input asp-for="CheckInTime" class="form-control" />
+             <span asp-validation-for="CheckInTime" class="text-danger"></span>
+         </div>
+        <div class="form-group">
+             <label asp-for="CheckOutTime" class="control-label"></label>
+             <input asp-for="CheckOutTime" class="form-control" />
+             <span asp-validation-for="CheckOutTime" class="text-danger"></span>
+         </div> *@
             <div class="form-group">
                 <label asp-for="MemberId" class="control-label"></label>
                 <select asp-for="MemberId" class="form-control" asp-items="ViewBag.MemberId"></select>
